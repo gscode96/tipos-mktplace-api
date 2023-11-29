@@ -21,10 +21,23 @@ public class TiposCardapiosServiceImpl implements TiposCardapiosService {
 
 	@Override
 	public Page<TiposCardapios> buscarPorNome(String nome, Pageable paginacao) {
-		Page<TiposCardapios> tiposCardapios = repository.buscarPorNome(nome + "%", paginacao);
+		Page<TiposCardapios> tiposCardapios = repository.buscarPorNome(nome.toUpperCase() + "%", paginacao);
 		Preconditions.checkNotNull(tiposCardapios, "Não foi encontrado tipo de cardapio para o nome informado!");
 		return tiposCardapios;
 	}
+	
+	@Override
+	public TiposCardapios buscarPorId(Integer id) {
+		if (id < 1) {
+			throw new IllegalArgumentException("O id deve ser possitivo e maior que zero!");
+		}
+		TiposCardapios tipoEncontrado = repository.buscarPorId(id);
+		
+		Preconditions.checkNotNull(tipoEncontrado, "Não foi encontrado tipo para o id informado!");
+		
+		return tipoEncontrado;
+	}
+	
 
 	@Override
 	public TiposCardapios Inserir(TiposCardapios tipoCardapio) {
@@ -32,13 +45,33 @@ public class TiposCardapiosServiceImpl implements TiposCardapiosService {
 		if (tipoEncontrado != null) {
 			throw new IllegalArgumentException("O nome do tipo de cardapio já esta em uso!");
 		}
-		Preconditions.checkArgument(tipoCardapio.getStatus().equals(Status.A), "O status deve ser A ou I");
-		Preconditions.checkArgument(tipoCardapio.getStatus().equals(Status.I), "O status deve ser A ou I");
 		
 		tipoCardapio.setNome(tipoCardapio.getNome().toUpperCase());
 		TiposCardapios tipoSalvo = repository.save(tipoCardapio);
 
 		return tipoSalvo;
 	}
+	
+	@Override
+	public TiposCardapios Alterar(TiposCardapios tipoCardapio) {
+		
+		tipoCardapio.setNome(tipoCardapio.getNome().toUpperCase());
+		TiposCardapios tipoSalvo = repository.save(tipoCardapio);
+
+		return tipoSalvo;
+	}
+
+	@Override
+	public void atualizarStatus( Integer id, Status status) {
+		if (id < 1) {
+			throw new IllegalArgumentException("O id deve ser possitivo e maior que zero!");
+		}
+		TiposCardapios tipoEncontrado = repository.buscarPorId(id);
+		Preconditions.checkNotNull(tipoEncontrado, "Não encontrado tipo para o id informado!");
+		Preconditions.checkArgument(!tipoEncontrado.getStatus().equals(status), "O status informado já esta salvo!");
+		repository.atualizarPor(id, status);
+	}
+
+
 
 }
